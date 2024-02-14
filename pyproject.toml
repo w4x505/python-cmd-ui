@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "cmd-ui"
+version = "0.1.0"
+description = ""
+authors = ["m4x505"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+mypy = "^1.8.0"
+
+[tool.poetry.scripts]
+start-tests = "tests.start:test"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -3,27 +3,24 @@ from cmd_ui.control import Control
 from os import system
 
 class Interface:
-    items = ['']
-    title = ''
-    item_focus_index = 0
-
     def __init__(self, items: List[str], title = ''):
-        self.items = items
-        self.title = title
+        self.__items = items
+        self.__title = title
+        self.__item_focus_index = 0
 
-        if self.title:
-            print(self.title)
+        if self.__title:
+            print(self.__title)
 
         system('cls')
         self.__create_menu()
 
         Control([
             {
-                'key_name': 'w',
+                'key': 'up',
                 'callback': lambda: self.__update_focus_index(self.__get_focus_index() - 1)
             },
             {
-                'key_name': 's',
+                'key': 'down',
                 'callback': lambda: self.__update_focus_index(self.__get_focus_index() + 1)
             },
         ])
@@ -33,9 +30,9 @@ class Interface:
         self.__create_menu()
 
     def __create_menu(self) -> None:
-        buf = self.title + '\n'
-        for i, item in enumerate(self.items):
-            if i == self.item_focus_index:
+        buf = self.__title + '\n'
+        for i, item in enumerate(self.__items):
+            if i == self.__item_focus_index:
                 buf += f'\n{i + 1}. \u001b[4m\u001b[1m{item}\033[0m'
                 continue
 
@@ -44,16 +41,16 @@ class Interface:
         print(buf)
 
     def __set_focus_index(self, index) -> None:
-        self.item_focus_index = index
+        self.__item_focus_index = index
         self.__update_menu()
 
     def __update_focus_index(self, index) -> None:
         if index < 0:
-            self.__set_focus_index(len(self.items) - 1)
-        elif index > len(self.items) - 1:
+            self.__set_focus_index(len(self.__items) - 1)
+        elif index > len(self.__items) - 1:
             self.__set_focus_index(0)
         else:
             self.__set_focus_index(index)
 
     def __get_focus_index(self) -> int:
-        return self.item_focus_index
+        return self.__item_focus_index

@@ -1,47 +1,62 @@
 from dataclasses import dataclass
-from typing import Callable, TypedDict, List, NewType, Iterable
+from typing import Callable, List, Union
 from msvcrt import getch
 
+class ASCIKeysCode:
+    esc = b'\x1b'
+    eot = b'\x03' # End of Text (ctrl + c)
+    special = 224
+    up = 72
+    down = 80
+    left = 75
+    right = 77
+
 @dataclass
-class KeyAction(TypedDict):
-    key: str
+class Key:
+    key: Union[str, int]
     callback: Callable
 
 class Control:
-    keys_action: List[KeyAction]
-
-    def __init__(self, keys_action: List[KeyAction], exit_key = b'\x1b') -> None:
+    def __init__(self, keys_action: List[Key], exit_key = ASCIKeysCode.esc) -> None:
         self.keys_action = keys_action
-        self.special_key_code = 0
 
         while True:
-            key_index = ord(getch())
-            if key_index == ord(exit_key) or key_index == ord('\003'):
+            key_code = ord(getch())
+            if key_code.to_bytes() == exit_key or key_code.to_bytes() == ASCIKeysCode.eot:
                 break
 
-            for key in self.keys_action:
-                if len(key['key']) <= 1 and ord(key['key']) == key_index:
-                    key['callback']()
-                    continue
+            if key_code == ASCIKeysCode.special:
+                key_code = ord(getch())
 
-                if key_index == self.special_key_code:
-                    key_index = ord(getch())
+                for arrow_key in self.keys_action:
+                    if (
+                        arrow_key.key == ASCIKeysCode.up and key_code == ASCIKeysCode.up or
+                        arrow_key.key == ASCIKeysCode.down and key_code == ASCIKeysCode.down or
+                        arrow_key.key == ASCIKeysCode.left and key_code == ASCIKeysCode.left or
+                        arrow_key.key == ASCIKeysCode.right and key_code == ASCIKeysCode.right
+                    ): arrow_key.callback()
+            else:
+                for key in self.keys_action:
+                    if self.is_arrow_key(key.key):
+                        continue
 
-                    if key_index == self.get_arrow_key_code(key['key']):
-                        key['callback']()
+                    if not isinstance(key.key, int) and key_code != ord(key.key):
+                        continue
 
-    def get_arrow_key_code(self, key: str) -> int:
-        if key == 'up':
-            return 72
-        
-        if key == 'down':
-            return 80
-        
-        if key == 'left':
-            return 75
-        
-        if key == 'right':
-            return 77
-            
-        return -1
-    
+                    if key_code != key.key:
+                        continue
+
+                    key.callback()
+
+    def is_arrow_key(self, key: str | int) -> bool:
+        if (
+            key == 'up' or
+            key == 'down' or
+            key == 'left' or
+            key == 'right' or
+            key == ASCIKeysCode.up or
+            key == ASCIKeysCode.down or
+            key == ASCIKeysCode.left or
+            key == ASCIKeysCode.right
+        ): return True
+        return False

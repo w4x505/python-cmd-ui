@@ -10,7 +10,7 @@ python = "^3.12"
 mypy = "^1.8.0"
 
 [tool.poetry.scripts]
-start-tests = "tests.start:test"
+start-tests = "tests.interface:test"
 
 [build-system]
 requires = ["poetry-core"]

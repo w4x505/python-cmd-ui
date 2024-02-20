@@ -1,34 +1,31 @@
 from typing import List
 from os import system
-from cmd_ui.control import Control, Key, ASCIKeysCode
+from cmd_ui.control import KeyHandler, Key
 
 class Interface:
+    control: KeyHandler
+
     def __init__(self, items: List[str], title = ''):
         self.__items = items
         self.__title = title
         self.__item_focus_index = 0
 
-        system('cls')
-        self.__create_menu()
+        self.__update_menu()
 
-        Control([
-            Key(key=ASCIKeysCode.up, callback=self.__user_key_press_down),
-            Key(key=ASCIKeysCode.down, callback=self.__user_key_press_up),
-            Key(key='w', callback=self.__user_key_press_down),
-            Key(key='s', callback=self.__user_key_press_up),
-        ])
+        self.control = KeyHandler()
 
-    def __user_key_press_down(self) -> None:
-        self.__update_focus_index(self.__get_focus_index() - 1)
+        self.control.add_key(Key(identifier='special_key', callback=self.__user_key_press_up, is_special_key=True))
+        self.control.add_key(Key(identifier='down', callback=self.__user_key_press_down, is_special_key=True))
+        self.control.add_key(Key(identifier='s', callback=self.__user_key_press_down))
 
     def __user_key_press_up(self) -> None:
+        self.__update_focus_index(self.__get_focus_index() - 1)
+
+    def __user_key_press_down(self) -> None:
         self.__update_focus_index(self.__get_focus_index() + 1)
 
     def __update_menu(self) -> None:
         system('cls')
-        self.__create_menu()
-
-    def __create_menu(self) -> None:
         buf = ''
 
         if len(self.__title) > 0:
